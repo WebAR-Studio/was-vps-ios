@@ -1,0 +1,336 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.1.2 effective-5.10 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+// swift-module-flags: -target arm64-apple-ios15.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name WASVPS
+// swift-module-flags-ignorable:  -interface-compiler-version 6.1.2
+import ARKit
+import CoreLocation
+import Foundation
+import SceneKit
+import Swift
+import UIKit
+import VideoToolbox
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import simd
+public protocol LocationManagerProtocol {
+  func attemptLocationAccess()
+  func canGetCorrectGPS() -> Swift.Bool
+  func getLocation() -> CoreLocation.CLLocation?
+}
+public struct UploadVPSPhoto {
+  public var sessionID: Swift.String
+  public var clientID: Swift.String
+  public var timestamp: Swift.Double
+  public var locationClientCoordSystem: Swift.String
+  public var locPosX: Swift.Float
+  public var locPosY: Swift.Float
+  public var locPosZ: Swift.Float
+  public var locPosRoll: Swift.Float
+  public var locPosPitch: Swift.Float
+  public var locPosYaw: Swift.Float
+  public var instrinsicsFX: Swift.Float
+  public var instrinsicsFY: Swift.Float
+  public var instrinsicsCX: Swift.Float
+  public var instrinsicsCY: Swift.Float
+  public var width: Swift.UInt
+  public var height: Swift.UInt
+  public var image: UIKit.UIImage?
+  public var gps: WASVPS.GPS?
+  public var compas: WASVPS.Compas?
+  public var photoTransform: simd.simd_float4x4
+}
+public struct PoseVPS : Swift.Codable {
+  public let transform: simd.simd_float4x4
+  public var position: Swift.SIMD3<Swift.Float> {
+    get
+  }
+  public var rotation: Swift.SIMD3<Swift.Float> {
+    get
+  }
+  public init(position: Swift.SIMD3<Swift.Float>, rotation: Swift.SIMD3<Swift.Float>)
+  public init(transform: simd.simd_float4x4)
+  public init(from decoder: any Swift.Decoder) throws
+  public func encode(to encoder: any Swift.Encoder) throws
+}
+public class VPS {
+  public var vpsStatus: WASVPS.VPSStatus
+  public var clientID: Swift.String {
+    get
+  }
+  public var sessionId: Swift.String {
+    get
+  }
+  public var settings: WASVPS.Settings
+  public var converterGPS: WASVPS.ConverterGPS
+  public var gpsUsage: Swift.Bool {
+    get
+    set
+  }
+  public var simdWorldTransform: simd.simd_float4x4?
+  weak public var delegate: (any WASVPS.VPSServiceDelegate)?
+  public init(arSession: ARKit.ARSession, apiKey: Swift.String, locationIds: [Swift.String], url: Swift.String = "", gpsUsage: Swift.Bool = false, maxFailsCount: Swift.Int = 5)
+  public static func getGeoreference(from response: WASVPS.ResponseVPSPhoto) -> WASVPS.GeoReferencing?
+  public func start()
+  public func stop()
+  public func frameUpdated()
+  public func getLatestPose()
+  public func sendUIImage(image: UIKit.UIImage)
+  public func setCustomLocPosForFirstRequest(x: Swift.Float, y: Swift.Float, z: Swift.Float, roll: Swift.Float, pitch: Swift.Float, yaw: Swift.Float)
+  public func clearCustomLocPos()
+  @objc deinit
+}
+public struct Compas {
+  public var heading: Swift.Double
+  public var acc: Swift.Double
+  public var timestamp: Swift.Double
+}
+public enum VPSStatus : Swift.CaseIterable {
+  case fastLocalized
+  case normal
+  case stopped
+  public static func == (a: WASVPS.VPSStatus, b: WASVPS.VPSStatus) -> Swift.Bool
+  public typealias AllCases = [WASVPS.VPSStatus]
+  nonisolated public static var allCases: [WASVPS.VPSStatus] {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct Settings {
+  public let url: Swift.String
+  public let apiKey: Swift.String
+  public var locationIds: [Swift.String]
+  public let maxFailsCount: Swift.Int
+  public var animationTime: Swift.Float {
+    get
+    set
+  }
+  public var sendFastPhotoDelay: Foundation.TimeInterval {
+    get
+    set
+  }
+  public var sendPhotoDelay: Foundation.TimeInterval {
+    get
+    set
+  }
+  public var distanceForInterp: Swift.Float {
+    get
+    set
+  }
+  public var angleForInterp: Swift.Float {
+    get
+    set
+  }
+  public var gpsAccuracyBarrier: Swift.Double {
+    get
+    set
+  }
+  public var timeOutDuration: Foundation.TimeInterval {
+    get
+    set
+  }
+  public var firstRequestDelay: Foundation.TimeInterval {
+    get
+    set
+  }
+  public let customGeoReference: WASVPS.GeoReferencing?
+  public init(apiKey: Swift.String, locationIds: [Swift.String], url: Swift.String = "", maxFailsCount: Swift.Int = 5, customGeoReference: WASVPS.GeoReferencing? = nil)
+}
+public struct ResponseVPSPhoto {
+  public var status: Swift.Bool
+  public var statusDescription: Swift.String
+  public var locationId: Swift.String?
+  public var vpsPose: WASVPS.VPSPose?
+  public var vpsSendPose: WASVPS.VPSPose?
+  public var gps: WASVPS.GPSResponse?
+  public var compass: WASVPS.CompassResponse?
+  public init(status: Swift.Bool, statusDescription: Swift.String, vpsPose: WASVPS.VPSPose? = nil, vpsSendPose: WASVPS.VPSPose? = nil, gps: WASVPS.GPSResponse? = nil, compass: WASVPS.CompassResponse? = nil, locationId: Swift.String? = nil)
+}
+public struct VPSPose {
+  public let posX: Swift.Float
+  public let posY: Swift.Float
+  public let posZ: Swift.Float
+  public let posRoll: Swift.Float
+  public let posPitch: Swift.Float
+  public let posYaw: Swift.Float
+  public init(posX: Swift.Float, posY: Swift.Float, posZ: Swift.Float, posRoll: Swift.Float, posPitch: Swift.Float, posYaw: Swift.Float)
+  public var position: Swift.SIMD3<Swift.Float> {
+    get
+  }
+  public var rotation: Swift.SIMD3<Swift.Float> {
+    get
+  }
+}
+public struct GPSResponse {
+  public let lat: Swift.Double
+  public let long: Swift.Double
+  public init(lat: Swift.Double, long: Swift.Double)
+  public var coordinate: CoreLocation.CLLocationCoordinate2D {
+    get
+  }
+}
+public struct CompassResponse {
+  public let heading: Swift.Double
+  public init(heading: Swift.Double)
+  public var headingRadians: Swift.Double {
+    get
+  }
+}
+public func getEulerFrom(transform: simd.simd_float4x4) -> Swift.SIMD3<Swift.Float>
+public func getTransformFrom(euler: Swift.SIMD3<Swift.Float>, position: Swift.SIMD3<Swift.Float>) -> simd.simd_float4x4
+public func getTransformFrom(euler: Swift.SIMD3<Swift.Float>) -> simd.simd_float4x4
+public func getAngleFrom(euler: SceneKit.SCNVector3) -> Swift.Float
+public func clamped<T>(_ value: T, minValue: T, maxValue: T) -> T where T : Swift.Comparable
+public struct MapPoseVPS : Swift.Codable {
+  public let latitude: Swift.Double
+  public let longitude: Swift.Double
+  public let course: Swift.Double
+  public init(latitude: Swift.Double, longitude: Swift.Double, course: Swift.Double)
+  public func toCLLocationCoordinate2D() -> CoreLocation.CLLocationCoordinate2D
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@_hasMissingDesignatedInitializers final public class TimerManager {
+  weak final public var delegate: (any WASVPS.TimerManagerDelegate)?
+  final public var delayTime: Swift.Double
+  final public func startTimer(timeInterval: Foundation.TimeInterval, delegate: any WASVPS.TimerManagerDelegate, fired: Swift.Bool = false)
+  final public func invalidateTimer()
+  final public func recreate(timeInterval: Foundation.TimeInterval, delegate: any WASVPS.TimerManagerDelegate, fired: Swift.Bool = false)
+  @objc deinit
+}
+public enum EarthConstants {
+  public static let meridianInMeters: Swift.Double
+  public static let parallelsInMeters: Swift.Double
+}
+@objc @_inheritsConvenienceInitializers final public class LocationManager : ObjectiveC.NSObject {
+  @objc required override dynamic public init()
+  @objc deinit
+}
+extension WASVPS.LocationManager : WASVPS.LocationManagerProtocol {
+  final public func getLocation() -> CoreLocation.CLLocation?
+  final public func attemptLocationAccess()
+  final public func canGetCorrectGPS() -> Swift.Bool
+}
+extension WASVPS.LocationManager : CoreLocation.CLLocationManagerDelegate {
+  @objc final public func locationManager(_ manager: CoreLocation.CLLocationManager, didUpdateLocations locations: [CoreLocation.CLLocation])
+  @objc final public func locationManager(_ manager: CoreLocation.CLLocationManager, didChangeAuthorization status: CoreLocation.CLAuthorizationStatus)
+  @objc final public func locationManager(_ manager: CoreLocation.CLLocationManager, didFailWithError error: any Swift.Error)
+}
+@_hasMissingDesignatedInitializers public class VPSBuilder {
+  public static func getDefaultConfiguration() -> ARKit.ARWorldTrackingConfiguration?
+  public static func initializeVPS(arSession: ARKit.ARSession, apiKey: Swift.String, locationIds: [Swift.String], url: Swift.String = "", gpsUsage: Swift.Bool = false, maxFailsCount: Swift.Int = 5, delegate: (any WASVPS.VPSServiceDelegate)?, success: ((WASVPS.VPS) -> Swift.Void)?)
+  @objc deinit
+}
+public class ConverterGPS {
+  public var geoReferencing: WASVPS.GeoReferencing? {
+    get
+  }
+  public var status: WASVPS.ConverterGPS.Status {
+    get
+  }
+  public enum Status : Swift.Error, Foundation.LocalizedError {
+    case waiting
+    case unavailable
+    case ready
+    public var errorDescription: Swift.String? {
+      get
+    }
+    public static func == (a: WASVPS.ConverterGPS.Status, b: WASVPS.ConverterGPS.Status) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public init()
+  public func setGeoReference(_ geoReferencing: WASVPS.GeoReferencing)
+  public func convertToGPS(pose: WASVPS.PoseVPS) throws -> WASVPS.MapPoseVPS
+  public func convertToVPS(mapPose: WASVPS.MapPoseVPS) throws -> WASVPS.PoseVPS
+  @objc deinit
+}
+public enum VPSError : Swift.Error, Swift.CaseIterable {
+  case cantGetRendererUIImage
+  case cantInitHairRenderer
+  case networkError
+  case invalidResponse
+  case noDataReceived
+  public var code: Swift.Int {
+    get
+  }
+  public var description: Swift.String {
+    get
+  }
+  public static let domain: Swift.String
+  public var nsError: Foundation.NSError {
+    get
+  }
+  public static func == (a: WASVPS.VPSError, b: WASVPS.VPSError) -> Swift.Bool
+  public typealias AllCases = [WASVPS.VPSError]
+  nonisolated public static var allCases: [WASVPS.VPSError] {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+extension WASVPS.VPS : WASVPS.TimerManagerDelegate {
+  public func timerFired()
+}
+extension WASVPS.VPS : WASVPS.VPSServiceProtocol {
+  public func setupMock(mock: WASVPS.ResponseVPSPhoto)
+  public func updateSesionId()
+}
+public struct GPS {
+  public var lat: Swift.Double
+  public var long: Swift.Double
+  public var alt: Swift.Double
+  public var acc: Swift.Double
+  public var timestamp: Swift.Double
+}
+public protocol VPSServiceDelegate : AnyObject {
+  func positionVPS(pos: WASVPS.ResponseVPSPhoto)
+  func error(err: Foundation.NSError)
+  func sending(requestData: WASVPS.UploadVPSPhoto?)
+  func onUpdateSessionId(_ sessionId: Swift.String)
+}
+extension WASVPS.VPSServiceDelegate {
+  public func sending(requestData: WASVPS.UploadVPSPhoto? = nil)
+  public func onUpdateSessionId(_ sessionId: Swift.String)
+}
+public protocol VPSServiceProtocol {
+  var settings: WASVPS.Settings { get set }
+  var converterGPS: WASVPS.ConverterGPS { get }
+  var gpsUsage: Swift.Bool { get set }
+  func start()
+  func stop()
+  func getLatestPose()
+  func setupMock(mock: WASVPS.ResponseVPSPhoto)
+  func sendUIImage(image: UIKit.UIImage)
+  func frameUpdated()
+  func updateSesionId()
+  func setCustomLocPosForFirstRequest(x: Swift.Float, y: Swift.Float, z: Swift.Float, roll: Swift.Float, pitch: Swift.Float, yaw: Swift.Float)
+  func clearCustomLocPos()
+}
+public protocol TimerManagerDelegate : AnyObject {
+  func timerFired()
+}
+extension Foundation.UUID {
+  public static func uuidV7String(withHyphens: Swift.Bool = true) -> Swift.String
+}
+public struct GeoReferencing : Swift.Codable {
+  public let geopoint: WASVPS.MapPoseVPS
+  public let coordinateVPS: WASVPS.PoseVPS
+  public init(geopoint: WASVPS.MapPoseVPS, coordinate: WASVPS.PoseVPS)
+  public static func load(from url: Foundation.URL) -> WASVPS.GeoReferencing?
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension WASVPS.VPSStatus : Swift.Equatable {}
+extension WASVPS.VPSStatus : Swift.Hashable {}
+extension WASVPS.ConverterGPS.Status : Swift.Equatable {}
+extension WASVPS.ConverterGPS.Status : Swift.Hashable {}
+extension WASVPS.VPSError : Swift.Equatable {}
+extension WASVPS.VPSError : Swift.Hashable {}
