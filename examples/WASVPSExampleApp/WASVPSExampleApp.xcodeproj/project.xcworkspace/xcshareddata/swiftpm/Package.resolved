@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/WebAR-Studio/was-vps-ios.git",
       "state" : {
-        "revision" : "c5b5c54c5da93386b66f5a1399de79b5a71978c8",
-        "version" : "1.0.0"
+        "revision" : "a5053668090181fdb85d6402a1f21c34c69281ed",
+        "version" : "1.0.1"
       }
     }
   ],
