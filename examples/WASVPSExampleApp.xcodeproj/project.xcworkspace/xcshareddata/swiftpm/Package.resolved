@@ -1,0 +1,15 @@
+{
+  "originHash" : "cc4fa18d92733349926dba4e7a679115d7f6e7c3641a98833e6af09c9ef71300",
+  "pins" : [
+    {
+      "identity" : "was-vps-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/WebAR-Studio/was-vps-ios.git",
+      "state" : {
+        "revision" : "c5b5c54c5da93386b66f5a1399de79b5a71978c8",
+        "version" : "1.0.0"
+      }
+    }
+  ],
+  "version" : 3
+}
