@@ -385,7 +385,7 @@ struct ARSCNViewContainer: UIViewRepresentable {
             let vertices = plyPoints.map { SCNVector3($0.position.x, $0.position.y, $0.position.z) }
             let vertexSource = SCNGeometrySource(vertices: vertices)
 
-            // Используем цвета из PLY файла
+            // Use colors from the PLY file
             var colors = plyPoints.map { plyPoint in
                 SIMD4<Float>(plyPoint.color.x, plyPoint.color.y, plyPoint.color.z, currentPointAlpha)
             }
@@ -417,7 +417,7 @@ struct ARSCNViewContainer: UIViewRepresentable {
             arscnView.scene.rootNode.addChildNode(node)
             pointCloudNode = node
             
-            print("Отрисовано \(plyPoints.count) точек из PLY файла")
+            print("Rendered \(plyPoints.count) points from PLY file")
         }
 
         func session(_ session: ARSession, didUpdate frame: ARFrame) {

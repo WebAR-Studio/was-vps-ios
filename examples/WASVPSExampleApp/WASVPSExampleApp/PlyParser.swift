@@ -16,21 +16,21 @@ class PlyParser {
     }
     
     static func parsePlyData(_ data: Data) throws -> [PlyPoint] {
-        print("Начинаем парсинг PLY файла, размер: \(data.count) байт")
+        print("Starting PLY file parsing, size: \(data.count) bytes")
         
-        // Показываем первые символы для отладки
+        // Show first characters for debugging
         if data.count > 0 {
             let firstChars = data.prefix(20).map { String(format: "%c", $0) }.joined()
-            print("Первые 20 символов: '\(firstChars)'")
+            print("First 20 characters: '\(firstChars)'")
             
             let firstBytes = data.prefix(20).map { String(format: "%02X", $0) }.joined(separator: " ")
-            print("Первые 20 байт: \(firstBytes)")
+            print("First 20 bytes: \(firstBytes)")
         }
         
-        // Сначала читаем заголовок как текст
-        let headerData = data.prefix(4096) // Первые 4KB для заголовка
+        // First read header as text
+        let headerData = data.prefix(4096) // First 4KB for header
         
-        // Пробуем разные кодировки для заголовка
+        // Try different encodings for header
         let headerString: String
         if let asciiString = String(data: headerData, encoding: .ascii) {
             headerString = asciiString
@@ -39,23 +39,23 @@ class PlyParser {
         } else if let isoLatin1String = String(data: headerData, encoding: .isoLatin1) {
             headerString = isoLatin1String
         } else {
-            // Если не удалось декодировать, показываем первые байты для отладки
+            // If decoding failed, show first bytes for debugging
             let firstBytes = data.prefix(100).map { String(format: "%02X", $0) }.joined(separator: " ")
-            print("Не удалось декодировать заголовок. Первые 100 байт: \(firstBytes)")
-            throw PlyError.parsingError("Не удалось декодировать заголовок PLY файла")
+            print("Failed to decode header. First 100 bytes: \(firstBytes)")
+            throw PlyError.parsingError("Failed to decode PLY file header")
         }
         
         let headerLines = headerString.components(separatedBy: .newlines)
         var currentLine = 0
         
-        print("Заголовок PLY файла:")
+        print("PLY file header:")
         print(headerString)
-        print("--- Конец заголовка ---")
+        print("--- End of header ---")
         
-        // Парсим заголовок
+        // Parse header
         guard headerLines.count > 0, headerLines[currentLine].trimmingCharacters(in: .whitespaces) == "ply" else {
-            print("Файл не начинается с 'ply'")
-            print("Первая строка: '\(headerLines.first ?? "пустая")'")
+            print("File does not start with 'ply'")
+            print("First line: '\(headerLines.first ?? "empty")'")
             throw PlyError.invalidFormat
         }
         currentLine += 1
@@ -63,17 +63,17 @@ class PlyParser {
         var format = ""
         var vertexCount = 0
         var hasColor = false
-        var colorFormat = "float" // По умолчанию float
+        var colorFormat = "float" // Default is float
         var headerEndIndex = 0
         
-        // Читаем заголовок
-        print("Начинаем парсинг заголовка...")
+        // Read header
+        print("Starting header parsing...")
         while currentLine < headerLines.count {
             let line = headerLines[currentLine].trimmingCharacters(in: .whitespaces)
             
-            // Пропускаем комментарии
+            // Skip comments
             if line.hasPrefix("comment") {
-                print("Комментарий: \(line)")
+                print("Comment: \(line)")
                 currentLine += 1
                 continue
             }
@@ -82,40 +82,40 @@ class PlyParser {
                 let parts = line.components(separatedBy: .whitespaces)
                 if parts.count >= 2 {
                     format = parts[1]
-                    print("Формат: \(format)")
+                    print("Format: \(format)")
                 }
             } else if line.hasPrefix("element vertex") {
                 let parts = line.components(separatedBy: .whitespaces)
                 if parts.count >= 3, let count = Int(parts[2]) {
                     vertexCount = count
-                    print("Количество вершин: \(vertexCount)")
+                    print("Vertex count: \(vertexCount)")
                 }
             } else if line.hasPrefix("element face") {
-                // Пропускаем информацию о гранях - мы их не используем
-                print("Найдены грани в PLY файле - пропускаем")
+                // Skip face info - not used
+                print("Found faces in PLY file - skipping")
             } else if line.hasPrefix("property") {
-                print("Свойство: \(line)")
+                print("Property: \(line)")
                 if line.contains("red") || line.contains("green") || line.contains("blue") {
                     hasColor = true
-                    // Определяем формат цвета
+                    // Determine color format
                     let parts = line.components(separatedBy: .whitespaces)
                     if parts.count >= 2 {
                         colorFormat = parts[1] // float, uchar, etc.
-                        print("Формат цвета: \(colorFormat)")
+                        print("Color format: \(colorFormat)")
                     }
                 }
             } else if line == "end_header" {
-                print("Заголовок завершен")
-                // Находим позицию конца заголовка в исходных данных
+                print("Header finished")
+                // Find end of header position in source data
                 if let endHeaderRange = headerString.range(of: "end_header") {
                     headerEndIndex = headerString.distance(from: headerString.startIndex, to: endHeaderRange.upperBound)
-                    // Добавляем перевод строки
+                    // Add newline
                     headerEndIndex += 1
                 }
                 currentLine += 1
                 break
             } else if !line.isEmpty {
-                print("Неизвестная строка заголовка: \(line)")
+                print("Unknown header line: \(line)")
             }
             
             currentLine += 1
@@ -129,7 +129,7 @@ class PlyParser {
             throw PlyError.missingVertexData
         }
         
-        print("Парсим PLY файл: \(vertexCount) вершин, цвет: \(hasColor ? "да (\(colorFormat))" : "нет"), формат: \(format)")
+        print("Parsing PLY file: \(vertexCount) vertices, color: \(hasColor ? "yes (\(colorFormat))" : "no"), format: \(format)")
         
         if format == "ascii" {
             return try parseAsciiFormat(data: data, headerEndIndex: headerEndIndex, vertexCount: vertexCount, hasColor: hasColor, colorFormat: colorFormat)
@@ -150,12 +150,12 @@ class PlyParser {
         
         for i in 0..<vertexCount {
             guard currentLine < lines.count else {
-                throw PlyError.parsingError("Неожиданный конец файла на строке \(currentLine)")
+                throw PlyError.parsingError("Unexpected end of file at line \(currentLine)")
             }
             
             let line = lines[currentLine].trimmingCharacters(in: .whitespaces)
             
-            // Пропускаем пустые строки
+            // Skip empty lines
             guard !line.isEmpty else {
                 currentLine += 1
                 continue
@@ -164,27 +164,27 @@ class PlyParser {
             let components = line.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
             
             guard components.count >= 3 else {
-                print("Ошибка в строке \(currentLine): недостаточно компонентов (\(components.count))")
-                print("Строка: '\(line)'")
-                throw PlyError.parsingError("Недостаточно компонентов в строке \(currentLine): '\(line)'")
+                print("Error at line \(currentLine): not enough components (\(components.count))")
+                print("Line: '\(line)'")
+                throw PlyError.parsingError("Not enough components in line \(currentLine): '\(line)'")
             }
             
             guard let x = Float(components[0]),
                   let y = Float(components[1]),
                   let z = Float(components[2]) else {
-                print("Ошибка в строке \(currentLine): неверный формат координат")
-                print("Строка: '\(line)'")
-                print("Компоненты: \(components)")
-                throw PlyError.parsingError("Неверный формат координат в строке \(currentLine): '\(line)'")
+                print("Error at line \(currentLine): invalid coordinate format")
+                print("Line: '\(line)'")
+                print("Components: \(components)")
+                throw PlyError.parsingError("Invalid coordinate format in line \(currentLine): '\(line)'")
             }
             
             let position = simd_float3(x, y, z)
-            var color = simd_float3(1.0, 1.0, 1.0) // Белый цвет по умолчанию
+            var color = simd_float3(1.0, 1.0, 1.0) // White color by default
             
-            // Если есть цветовые данные
+            // If color data exists
             if hasColor && components.count >= 6 {
                 if colorFormat == "uchar" {
-                    // Для uchar (0-255) конвертируем в float (0.0-1.0)
+                    // For uchar (0-255) convert to float (0.0-1.0)
                     if let r = UInt8(components[3]),
                        let g = UInt8(components[4]),
                        let b = UInt8(components[5]) {
@@ -194,16 +194,16 @@ class PlyParser {
                             Float(b) / 255.0
                         )
                     } else {
-                        print("Предупреждение: неверный формат цвета в строке \(currentLine)")
+                        print("Warning: invalid color format at line \(currentLine)")
                     }
                 } else {
-                    // Для float используем значения как есть
+                    // For float use values as is
                     if let r = Float(components[3]),
                        let g = Float(components[4]),
                        let b = Float(components[5]) {
                         color = simd_float3(r, g, b)
                     } else {
-                        print("Предупреждение: неверный формат цвета в строке \(currentLine)")
+                        print("Warning: invalid color format at line \(currentLine)")
                     }
                 }
             }
@@ -211,18 +211,18 @@ class PlyParser {
             points.append(PlyPoint(position: position, color: color))
             currentLine += 1
             
-            // Показываем прогресс каждые 10000 точек
+            // Show progress every 10000 points
             if i % 10000 == 0 {
-                print("Обработано \(i) из \(vertexCount) точек")
+                print("Processed \(i) of \(vertexCount) points")
             }
         }
         
-        print("Успешно распарсено \(points.count) точек")
+        print("Successfully parsed \(points.count) points")
         
-        // Проверяем, есть ли еще данные (грани)
+        // Check if there is remaining data (faces)
         if currentLine < lines.count {
             let remainingLines = lines.count - currentLine
-            print("Пропускаем \(remainingLines) строк с данными граней")
+            print("Skipping \(remainingLines) lines with face data")
         }
         
         return points
@@ -231,15 +231,15 @@ class PlyParser {
     private static func parseBinaryFormat(data: Data, headerEndIndex: Int, vertexCount: Int, hasColor: Bool, colorFormat: String, isLittleEndian: Bool) throws -> [PlyPoint] {
         let pointsData = data.subdata(in: headerEndIndex..<data.count)
         
-        print("Размер данных после заголовка: \(pointsData.count) байт")
+        print("Data size after header: \(pointsData.count) bytes")
         
-        // Вычисляем ожидаемый размер одной вершины
-        let vertexSize = 12 + (hasColor ? (colorFormat == "uchar" ? 3 : 12) : 0) // 12 байт для позиции + цвет
+        // Calculate expected size of a single vertex
+        let vertexSize = 12 + (hasColor ? (colorFormat == "uchar" ? 3 : 12) : 0) // 12 bytes for position + color
         let expectedSize = vertexCount * vertexSize
-        print("Ожидаемый размер данных: \(expectedSize) байт (\(vertexCount) вершин × \(vertexSize) байт)")
+        print("Expected data size: \(expectedSize) bytes (\(vertexCount) vertices × \(vertexSize) bytes)")
         
         if pointsData.count < expectedSize {
-            print("Предупреждение: размер данных меньше ожидаемого")
+            print("Warning: data size is smaller than expected")
         }
         
         var points: [PlyPoint] = []
@@ -249,16 +249,16 @@ class PlyParser {
         
         for i in 0..<vertexCount {
             guard currentOffset + 12 <= pointsData.count else {
-                throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
             }
             
-            // Читаем позицию (3 float по 4 байта каждый)
+            // Read position (3 floats of 4 bytes each)
             let xData = pointsData.subdata(in: currentOffset..<currentOffset + 4)
             let x = xData.withUnsafeBytes { $0.load(as: Float.self) }
             currentOffset += 4
             
             guard currentOffset + 8 <= pointsData.count else {
-                throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
             }
             
             let yData = pointsData.subdata(in: currentOffset..<currentOffset + 4)
@@ -266,7 +266,7 @@ class PlyParser {
             currentOffset += 4
             
             guard currentOffset + 4 <= pointsData.count else {
-                throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
             }
             
             let zData = pointsData.subdata(in: currentOffset..<currentOffset + 4)
@@ -274,27 +274,27 @@ class PlyParser {
             currentOffset += 4
             
             let position = simd_float3(x, y, z)
-            var color = simd_float3(1.0, 1.0, 1.0) // Белый цвет по умолчанию
+            var color = simd_float3(1.0, 1.0, 1.0) // White color by default
             
             if hasColor {
                 guard currentOffset + 3 <= pointsData.count else {
-                    throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                    throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
                 }
                 
                 if colorFormat == "uchar" {
-                    // Для uchar читаем как UInt8
+                    // For uchar read as UInt8
                     let r = UInt8(pointsData[currentOffset])
                     currentOffset += 1
                     
                     guard currentOffset + 2 <= pointsData.count else {
-                        throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                        throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
                     }
                     
                     let g = UInt8(pointsData[currentOffset])
                     currentOffset += 1
                     
                     guard currentOffset + 1 <= pointsData.count else {
-                        throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                        throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
                     }
                     
                     let b = UInt8(pointsData[currentOffset])
@@ -306,9 +306,9 @@ class PlyParser {
                         Float(b) / 255.0
                     )
                 } else {
-                    // Для float читаем как Float
+                    // For float read as Float
                     guard currentOffset + 12 <= pointsData.count else {
-                        throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                        throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
                     }
                     
                     let rData = pointsData.subdata(in: currentOffset..<currentOffset + 4)
@@ -316,7 +316,7 @@ class PlyParser {
                     currentOffset += 4
                     
                     guard currentOffset + 8 <= pointsData.count else {
-                        throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                        throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
                     }
                     
                     let gData = pointsData.subdata(in: currentOffset..<currentOffset + 4)
@@ -324,7 +324,7 @@ class PlyParser {
                     currentOffset += 4
                     
                     guard currentOffset + 4 <= pointsData.count else {
-                        throw PlyError.parsingError("Неожиданный конец файла на позиции \(currentOffset)")
+                        throw PlyError.parsingError("Unexpected end of file at offset \(currentOffset)")
                     }
                     
                     let bData = pointsData.subdata(in: currentOffset..<currentOffset + 4)
@@ -337,13 +337,13 @@ class PlyParser {
             
             points.append(PlyPoint(position: position, color: color))
             
-            // Показываем прогресс каждые 10000 точек
+            // Show progress every 10000 points
             if i % 10000 == 0 {
-                print("Обработано \(i) из \(vertexCount) точек")
+                print("Processed \(i) of \(vertexCount) points")
             }
         }
         
-        print("Успешно распарсено \(points.count) точек")
+        print("Successfully parsed \(points.count) points")
         
         return points
     }
