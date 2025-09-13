@@ -26,34 +26,6 @@ Clone this repository and integrate the source files into your project. Add the 
 
 Example implementations can be found in the repository demonstrating VPS service integration.
 
-## Migration from v1.0.xd
-
-**Breaking Changes in v1.1.0:**
-- API key is now **required** for all VPS initialization
-- Updated server endpoint to `https://was-vps.web-ar.xyz/vps/api/v3`
-- Simplified initialization API
-
-**Old way (v1.0.x):**
-```swift
-let settings = Settings(
-    url: "https://was-vps.web-ar.xyz/vps/api/v3",
-    locationIds: ["location_id"]
-)
-VPSBuilder.initializeVPS(arSession: session, settings: settings, ...)
-```
-
-**New way (v1.1.0+):**
-```swift
-VPSBuilder.initializeVPS(
-    arSession: session,
-    apiKey: "your-api-key-here",
-    locationIds: ["location_id"],
-    delegate: self
-) { vpsService in
-    self.vps = vpsService
-}
-```
-
 ## Usage
 
 ### User permissions
